@@ -13,7 +13,7 @@ PyObject *WriteError;
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
-    "nxppy",
+    "nxppy._mifare",
     NULL,
     0,
     NULL,
@@ -25,7 +25,7 @@ static struct PyModuleDef moduledef = {
 
 #define INITERROR return NULL
 
-PyObject *PyInit_nxppy(void)
+PyObject *PyInit_mifare(void)
 #else
 #define INITERROR return
 
@@ -34,7 +34,7 @@ PyMethodDef nxppy_methods[] = {
     ,
 };
 
-void initnxppy(void)
+void init_mifare(void)
 #endif
 {
     PyObject *module;
@@ -50,7 +50,7 @@ void initnxppy(void)
 #if PY_MAJOR_VERSION >= 3
     module = PyModule_Create(&moduledef);
 #else
-    module = Py_InitModule("nxppy", nxppy_methods);
+    module = Py_InitModule("nxppy._mifare", nxppy_methods);
 #endif
 
     if (module == NULL)
@@ -59,19 +59,19 @@ void initnxppy(void)
     Py_INCREF(&MifareType);
     PyModule_AddObject(module, "Mifare", (PyObject *) & MifareType);
 
-    InitError = PyErr_NewException("nxppy.InitError", NULL, NULL);
+    InitError = PyErr_NewException("nxppy._mifare.InitError", NULL, NULL);
     Py_INCREF(InitError);
     PyModule_AddObject(module, "InitError", InitError);
 
-    SelectError = PyErr_NewException("nxppy.SelectError", NULL, NULL);
+    SelectError = PyErr_NewException("nxppy._mifare.SelectError", NULL, NULL);
     Py_INCREF(SelectError);
     PyModule_AddObject(module, "SelectError", SelectError);
 
-    ReadError = PyErr_NewException("nxppy.ReadError", NULL, NULL);
+    ReadError = PyErr_NewException("nxppy._mifare.ReadError", NULL, NULL);
     Py_INCREF(ReadError);
     PyModule_AddObject(module, "ReadError", ReadError);
 
-    WriteError = PyErr_NewException("nxppy.WriteError", NULL, NULL);
+    WriteError = PyErr_NewException("nxppy._mifare.WriteError", NULL, NULL);
     Py_INCREF(WriteError);
     PyModule_AddObject(module, "WriteError", WriteError);
 

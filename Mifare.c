@@ -35,12 +35,10 @@ phalMfc_Sw_DataParams_t salMfc; /* MIFARE Classic parameter structure */
 
 uint8_t bDataBuffer[DATA_BUFFER_LEN];   /* universal data buffer */
 
-uint8_t bSak;                   /* SAK card type information */
-uint16_t wAtqa;                 /* ATQA card type information */
-uint8_t blockcnt = 0;
-
 /* Empty data */
 uint8_t CLEAR_DATA[PHAL_MFUL_WRITE_BLOCK_LENGTH];
+
+uint8_t ident_sak;
 
 /** General information bytes to be sent with ATR */
 const uint8_t GI[] = { 0x46, 0x66, 0x6D,
@@ -305,7 +303,9 @@ PyObject *Mifare_init(Mifare * self, PyObject * args, PyObject * kwds)
     for (i=0; i<PHAL_MFUL_WRITE_BLOCK_LENGTH; i++) {
         CLEAR_DATA[i] = 0;
     }
-
+    
+    ident_sak = -1;
+    
     Py_RETURN_NONE;
 }
 
@@ -354,21 +354,17 @@ PyObject *Mifare_select(Mifare * self)
      */
     if (PHAC_DISCLOOP_CHECK_ANDMASK(wTagsDetected, PHAC_DISCLOOP_POS_BIT_MASK_A)) {
 
-        uint8_t byteBufferSize = sDiscLoop.sTypeATargetInfo.aTypeA_I3P3[0].bUidSize + 1;
+        uint8_t byteBufferSize = sDiscLoop.sTypeATargetInfo.aTypeA_I3P3[0].bUidSize;
+        char asciiBuffer[byteBufferSize];
         uint8_t i;
-        char asciiBuffer[sDiscLoop.sTypeATargetInfo.aTypeA_I3P3[0].bUidSize + 1];
-
-        if (byteBufferSize + 1 > sDiscLoop.sTypeATargetInfo.aTypeA_I3P3[0].bUidSize + 1) {
-            // Truncate if we got back too much data
-            byteBufferSize = sDiscLoop.sTypeATargetInfo.aTypeA_I3P3[0].bUidSize;
-        }
 
         for (i = 0; i < byteBufferSize; i++) {
             sprintf(&asciiBuffer[2 * i], "%02X", sDiscLoop.sTypeATargetInfo.aTypeA_I3P3[0].aUid[i]);
         }
-
+        
+        ident_sak = sDiscLoop.sTypeATargetInfo.aTypeA_I3P3[0].aSak;
         return PyUnicode_FromString(asciiBuffer);
-
+        
     } else {
         return PyErr_Format(SelectError, "DISCLOOP_CHECK_ANDMASK failed: %02X", (status & PH_ERR_MASK));
     }
@@ -435,6 +431,35 @@ PyObject *Mifare_write_block(Mifare * self, PyObject * args)
     Py_RETURN_NONE;
 }
 
+PyObject *Mifare_get_identity(Mifare* self)
+{
+    if (ident_sak < 0)
+        return PyErr_Format(ReadError, "No tag selected.");
+    
+    uint8_t byteBufferSize = sDiscLoop.sTypeATargetInfo.aTypeA_I3P3[0].bUidSize;
+    char asciiBuffer[byteBufferSize];
+    uint16_t atqa = 0x00;
+    uint8_t i;
+
+    for (i = 0; i < byteBufferSize; i++) {
+        sprintf(&asciiBuffer[2 * i], "%02X", sDiscLoop.sTypeATargetInfo.aTypeA_I3P3[0].aUid[i]);
+    }
+    
+    for (i = 0; i < PHAC_DISCLOOP_I3P3A_MAX_ATQA_LENGTH; i++) {
+        atqa = atqa | sDiscLoop.sTypeATargetInfo.aTypeA_I3P3[0].aAtqa[i] << i * sizeof(uint8_t);
+    }
+    
+#if PY_MAJOR_VERSION >= 3
+    return Py_BuildValue("{s:y#, s:B, s:B}",
+#else
+    return Py_BuildValue("{s:s#, s:B, s:B}",
+#endif
+                         "uid\0",  &asciiBuffer[0], byteBufferSize * 2,
+                         "atqa\0", atqa,
+                         "sak\0",  ident_sak
+                        );
+}
+
 PyObject *Mifare_get_version(Mifare* self)
 {
     const size_t bufferSize = PHAL_MFC_VERSION_LENGTH;
@@ -484,6 +509,8 @@ PyMethodDef Mifare_methods[] = {
     ,
     {"get_version", (PyCFunction) Mifare_get_version, METH_NOARGS, "Read version data as a dict."}
     ,
+    {"get_ident", (PyCFunction) Mifare_get_identity, METH_NOARGS, "Read uid, atqa, and sak as a dict."}
+    ,
     {"clear_block", (PyCFunction) Mifare_clear_block, METH_VARARGS, "Clear 4 bytes starting at the specifed block."}
     ,
     {NULL}                      /* Sentinel */
@@ -491,7 +518,7 @@ PyMethodDef Mifare_methods[] = {
 
 PyTypeObject MifareType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-        "nxppy.Mifare",         /* tp_name */
+        "nxppy._mifare.Mifare", /* tp_name */
     sizeof(Mifare),             /* tp_basicsize */
     0,                          /* tp_itemsize */
     0,                          /* tp_dealloc */

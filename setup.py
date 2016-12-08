@@ -1,3 +1,4 @@
+
 from setuptools import setup
 from distutils.core import Extension
 from distutils.command.build import build
@@ -8,7 +9,7 @@ import multiprocessing
 from glob import glob
 
 
-nxppy = Extension('nxppy',
+mifare = Extension('nxppy._mifare',
                     define_macros = [('LINUX',None),('NATIVE_C_CODE',None),('NXPBUILD_CUSTOMER_HEADER_INCLUDED',None),('NXPBUILD__PHHAL_HW_RC523',None)],
                     extra_compile_args=['-O0',
                                         '-std=gnu99',
@@ -25,7 +26,6 @@ nxppy = Extension('nxppy',
                     ],
                     extra_link_args=['nxp/build/linux/libNxpRdLibLinuxPN512.a','-lpthread','-lrt'],
                     sources = ['Mifare.c', 'nxppy.c']
-                 
 )
 
 class build_nxppy(build):
@@ -55,12 +55,13 @@ except:
 
 setup (name = 'nxppy',
        version = '1.4.3',
-       description = short_description, 
+       description = short_description,
        long_description = long_description,
        author = 'Scott Vitale',
        author_email = 'svvitale@gmail.com',
        url = 'http://github.com/svvitale/nxppy',
        test_suite = 'nose.collector',
-       setup_requires=['nose>=1.0'],
-       ext_modules = [nxppy],
+       setup_requires = ['nose>=1.0'],
+       packages = ['nxppy'],
+       ext_modules = [mifare],
        cmdclass = {'build': build_nxppy})

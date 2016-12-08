@@ -6,3 +6,7 @@ test.py
 *.*~
 .eggs/
 nxp/
+*.pyc
+.coverage
+.gitlab-ci.yml
+html/

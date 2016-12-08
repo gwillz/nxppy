@@ -118,6 +118,9 @@ PyObject *Mifare_select(Mifare * self);
 PyObject *Mifare_read_block(Mifare * self, PyObject * args);
 PyObject *Mifare_read_sign(Mifare * self);
 PyObject *Mifare_write_block(Mifare * self, PyObject * args);
+PyObject *Mifare_clear_block(Mifare * self, PyObject * args);
+PyObject *Mifare_get_version(Mifare * self);
+PyObject *Mifare_get_identity(Mifare * self);
 
 extern PyObject *InitError;
 extern PyObject *SelectError;
