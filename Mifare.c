@@ -372,11 +372,12 @@ PyObject *Mifare_select(Mifare * self)
     Py_RETURN_NONE;
 }
 
-PyObject *Mifare_read_block(Mifare * self, PyObject * args)
+PyObject *Mifare_read_block(Mifare * self, PyObject * args, PyObject * kwds)
 {
     uint8_t blockIdx;
-    if (!PyArg_ParseTuple(args, "b", &blockIdx)) {
-        return NULL;
+    static char* kwlist[] = {"block", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist, &blockIdx)) {
+       return NULL;
     }
 
     phStatus_t status = 0;
@@ -410,15 +411,17 @@ PyObject *Mifare_read_sign(Mifare * self)
 #endif
 }
 
-PyObject *Mifare_write_block(Mifare * self, PyObject * args)
+PyObject *Mifare_write_block(Mifare * self, PyObject * args, PyObject * kwds)
 {
     phStatus_t status = 0;
     uint8_t blockIdx;
     uint8_t *data;
     int dataLen;
-
-    if (!PyArg_ParseTuple(args, "bs#", &blockIdx, &data, &dataLen)) {
-        return NULL;
+    
+    static char* kwlist[] = {"block", "data", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "bs#", kwlist,
+                                     &blockIdx, &data, &dataLen)) {
+       return NULL;
     }
 
     if (dataLen != PHAL_MFUL_WRITE_BLOCK_LENGTH) {
@@ -481,14 +484,15 @@ PyObject *Mifare_get_version(Mifare* self)
                         );
 }
 
-PyObject* Mifare_clear_block(Mifare* self, PyObject* args) {
+PyObject* Mifare_clear_block(Mifare* self, PyObject* args, PyObject* kwds) {
     phStatus_t status = 0;
     uint8_t blockIdx;
-
-    if (!PyArg_ParseTuple(args, "b", &blockIdx)) {
+    
+    static char* kwlist[] = {"block", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist, &blockIdx)) {
         return NULL;
     }
-
+    
     status = phalMful_Write(&salMfc, blockIdx, CLEAR_DATA);
     if (handle_error(status, WriteError)) return NULL;
 
@@ -501,17 +505,17 @@ PyObject* Mifare_clear_block(Mifare* self, PyObject* args) {
 PyMethodDef Mifare_methods[] = {
     {"select", (PyCFunction) Mifare_select, METH_NOARGS, "Select a Mifare card if present. Returns the card UID"}
     ,
-    {"read_block", (PyCFunction) Mifare_read_block, METH_VARARGS, "Read 4 bytes starting at the specified block."}
+    {"read_block", (PyCFunction) Mifare_read_block, METH_VARARGS | METH_KEYWORDS, "Read 4 bytes starting at the specified block."}
     ,
     {"read_sign", (PyCFunction) Mifare_read_sign, METH_NOARGS, "Read 32 bytes card manufacturer signature."}
     ,
-    {"write_block", (PyCFunction) Mifare_write_block, METH_VARARGS, "Write 4 bytes starting at the specified block."}
+    {"write_block", (PyCFunction) Mifare_write_block, METH_VARARGS | METH_KEYWORDS, "Write 4 bytes starting at the specified block."}
     ,
     {"get_version", (PyCFunction) Mifare_get_version, METH_NOARGS, "Read version data as a dict."}
     ,
     {"get_ident", (PyCFunction) Mifare_get_identity, METH_NOARGS, "Read uid, atqa, and sak as a dict."}
     ,
-    {"clear_block", (PyCFunction) Mifare_clear_block, METH_VARARGS, "Clear 4 bytes starting at the specifed block."}
+    {"clear_block", (PyCFunction) Mifare_clear_block, METH_VARARGS | METH_KEYWORDS, "Clear 4 bytes starting at the specifed block."}
     ,
     {NULL}                      /* Sentinel */
 };
