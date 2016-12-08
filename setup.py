@@ -25,7 +25,7 @@ mifare = Extension('nxppy._mifare',
                                         '-isystemnxp/linux/comps/phOsal/src/Posix'
                     ],
                     extra_link_args=['nxp/build/linux/libNxpRdLibLinuxPN512.a','-lpthread','-lrt'],
-                    sources = ['Mifare.c', 'nxppy.c']
+                    sources = ['src/Mifare.c', 'src/nxppy.c']
 )
 
 class build_nxppy(build):
@@ -54,7 +54,7 @@ except:
     long_description = short_description
 
 setup (name = 'nxppy',
-       version = '1.4.3',
+       version = '1.5.4',
        description = short_description,
        long_description = long_description,
        author = 'Scott Vitale',

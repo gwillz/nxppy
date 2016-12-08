@@ -1,4 +1,6 @@
 #pragma once
+#ifndef MIFARE_H
+#define MIFARE_H
 /*******************************************************************************
 * Copyright (c), NXP Semiconductors Gratkorn / Austria
 *
@@ -131,3 +133,5 @@ extern PyObject *WriteError;
 
 extern PyMethodDef Mifare_methods[];
 extern PyTypeObject MifareType;
+
+#endif // MIFARE_H

@@ -25,7 +25,7 @@ nxppy is available from PyPI.  To install, simply run:
 sudo pip install nxppy
 ```
 
-Installation will take some time as it automatically pulls down the NXP NFC Reader Library from souce.
+Installation will take some time as it automatically pulls down the NXP NFC Reader Library from source.
 
 Usage
 =====
@@ -39,11 +39,17 @@ mifare = nxppy.Mifare()
 # Select the first available tag and return the UID
 uid = mifare.select()
 
-# Read a single block of 4 bytes from block 10 
+# Read a single block of 4 bytes from block 10
 block10bytes = mifare.read_block(10)
 
 # Write a single block of 4 bytes
 mifare.write_block(10, 'abcd')
+
+# Get Sak, ATQA, UID
+print(mifare.get_ident())
+
+# Get Version/manufacturer data (for NTAG compliant tags)
+print(mifare.get_version())
 ```
 
 Example polling for tags:
