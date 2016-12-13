@@ -8,5 +8,4 @@ test.py
 nxp/
 *.pyc
 .coverage
-.gitlab-ci.yml
 html/

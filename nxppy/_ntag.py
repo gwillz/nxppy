@@ -1,10 +1,7 @@
 from nxppy._mifare import Mifare, SelectError, WriteError, ReadError
-"""
-TODO DOCS
-"""
 
 class Ntag(object):
-    """TODO DOCS"""
+    """Abstraction of the Mifare class to read/write strings to Ntag-21x cards."""
     BLOCK_SIZE = 4
     INIT_BLOCK = 4
     
@@ -16,7 +13,7 @@ class Ntag(object):
     
     
     def select(self):
-        """TODO DOCS"""
+        """Select a Ntag-21x tag if present, returns the tag UID."""
         
         uid = self._mifare.select() # this throws on error
         
@@ -52,7 +49,7 @@ class Ntag(object):
     
     
     def _check_block(self, block):
-        """TODO DOCS"""
+        """Internal use; ensures block number is within writeable limits."""
         
         if not self._blocks:
             raise WriteError("No tag selected")
@@ -63,13 +60,14 @@ class Ntag(object):
     
     
     def size(self):
+        """Returns tag size in bytes."""
         if not self._blocks:
             raise WriteError("No tag selected")
         return self._blocks * self.BLOCK_SIZE
     
     
     def read(self, block):
-        """TODO DOCS"""
+        """Read a null-terminated string, starting from the specified block."""
         
         self._check_block(block)
         
@@ -84,7 +82,7 @@ class Ntag(object):
     
     
     def write(self, block, payload):
-        """TODO DOCS"""
+        """Write a string, starting from the specified block."""
         
         self._check_block(block)
         
@@ -93,7 +91,7 @@ class Ntag(object):
         
         #size_blocks = -(-len(payload) // self.BLOCK_SIZE)
         
-        for b, i in enumerate(xrange(0, len(payload), self.BLOCK_SIZE), start=block):
+        for b, i in enumerate(range(0, len(payload), self.BLOCK_SIZE), start=block):
             if b >= self._blocks:
                 raise OverflowError("Payload too big {} < {}".format(self._blocks, b))
             
@@ -105,7 +103,7 @@ class Ntag(object):
     
     
     def clear(self, start_block, end_block):
-        """TODO DOCS"""
+        """Clear (set to null '\\0') a range of blocks."""
         
         self._check_block(start_block)
         
@@ -114,5 +112,5 @@ class Ntag(object):
     
     
     def clear_all(self):
-        """TODO DOCS"""
+        """Clear the entire tag."""
         self.clear(self.INIT_BLOCK, self._blocks)
