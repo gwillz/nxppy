@@ -25,7 +25,7 @@ static struct PyModuleDef moduledef = {
 
 #define INITERROR return NULL
 
-PyObject *PyInit_mifare(void)
+PyObject *PyInit__mifare(void)
 #else
 #define INITERROR return
 
@@ -41,12 +41,9 @@ void init_mifare(void)
 
     MifareType.tp_new = PyType_GenericNew;
     if (PyType_Ready(&MifareType) < 0) {
-#if PY_MAJOR_VERSION >= 3
-        return NULL;
-#else
-        return;
-#endif
+        INITERROR;
     }
+    
 #if PY_MAJOR_VERSION >= 3
     module = PyModule_Create(&moduledef);
 #else
