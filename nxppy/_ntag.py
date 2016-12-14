@@ -1,9 +1,18 @@
 from nxppy._mifare import Mifare, SelectError, WriteError, ReadError
 
+# dumb ordinary
+# pragma: no cover
+if isinstance([i for i in b'\xff'][0], int):
+    def dord(b): return b # py3
+else:
+    def dord(b): return ord(b) # py2
+
+
 class Ntag(object):
     """Abstraction of the Mifare class to read/write strings to Ntag-21x cards."""
     BLOCK_SIZE = 4
     INIT_BLOCK = 4
+    ENCODING = 'utf-8'
     
     def __init__(self, end_char="\0"):
         self._mifare = Mifare()
@@ -37,9 +46,9 @@ class Ntag(object):
             
             # this means it has a CC page
             cc = self._mifare.read_block(3)
-            size_bytes = ord(cc[2]) * 8
+            size_bytes = dord(cc[2]) * 8
             
-            self._blocks = size_bytes / self.BLOCK_SIZE
+            self._blocks = size_bytes // self.BLOCK_SIZE
             self._bytes = (size_bytes, size[0], size[1])
         
         except ReadError as e:
@@ -73,7 +82,7 @@ class Ntag(object):
         
         read = ""
         for i in range(block, self._blocks):
-            d = self._mifare.read_block(i)
+            d = str(self._mifare.read_block(i), self.ENCODING)
             read += d
             if len(d) == 0 or self._end in d:
                 break
@@ -97,7 +106,7 @@ class Ntag(object):
             
             data = payload[i:i+self.BLOCK_SIZE]
             if len(data) < 4:
-                data = "{:\0<4}".format(data)
+                data = bytes("{:\0<4}".format(data), self.ENCODING)
             
             self._mifare.write_block(b, data)
     
